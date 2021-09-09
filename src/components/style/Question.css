@@ -1,3 +1,9 @@
-.answer__selected {
+.questionWrapper {
+  margin: 10px;
+  padding: 5px;
   border: 2px solid black;
+  border-radius: 5px;
+}
+.questionWrapper * {
+  margin: 5px;
 }

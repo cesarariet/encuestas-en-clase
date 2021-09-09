@@ -1,53 +1,78 @@
-import { useState } from 'react';
+import React from 'react';
 import Question from './Question';
-const QuizForm = (props) => {
-  const quizId = props.quizId;
-  const initialState = {
-    _id: String(parseInt(Math.random() * 10000000)),
-    question: '',
-    quizId,
-    answers: [],
-  };
-  const [newQuestion, setQuestion] = useState(initialState);
-  function addAnswer() {
-    const question = document.querySelector('#question').value;
+import { connect } from 'react-redux';
+import {
+  addQuestionOrAnwserAction,
+  deleteQuestionAction,
+  selectCorrectAnswerAction,
+} from '../actions/questionActions';
+import { addQuestionOnQuizAction } from '../actions/quizActions';
+
+class QuizForm extends React.Component {
+  quizId = this.props.quizId;
+
+  addQuestionOrAnwser = () => {
+    const ask = document.querySelector('#ask').value;
     const answer = document.querySelector('#answer').value;
-    const answers = newQuestion.answers.concat({ answer, votes: 0 });
-    setQuestion({ ...newQuestion, question, answers });
-  }
-  function selectCorrectAnwer(e) {
-    e.target.parentNode.classList.toggle('answer__selected');
-    setQuestion({ ...newQuestion, correctAnswer: e.target.value });
-  }
-  function sendQuestion() {}
-  function resetQuestion() {
-    setQuestion(initialState);
-  }
-  return (
-    <>
-      <form id="newQuiz">
-        <label>
-          Pregunta:
-          <input type="text" name="question" id="question" />
-        </label>
-        <label>
-          Respuesta:
-          <input type="text" name="answer" id="answer" />
-          <button type="button" onClick={addAnswer}>
-            Agregar respuesta
+    this.props.addQuestionOrAnwserAction({ ask, answer });
+  };
+  selectCorrectAnswer = (e) => {
+    const correctAnswer = e.target.parentNode.getAttribute('value');
+    this.props.selectCorrectAnswerAction(correctAnswer);
+  };
+
+  render() {
+    return (
+      <>
+        <h1>Cuestionario: {this.quizId}</h1>
+        <form id="newQuiz">
+          <label>
+            Pregunta:
+            <input type="text" name="question" id="ask" />
+          </label>
+          <br />
+          <label>
+            Respuesta:
+            <input type="text" name="answer" id="answer" />
+          </label>
+          <br />
+          <button type="button" onClick={this.addQuestionOrAnwser}>
+            Agregar
           </button>
-        </label>
-      </form>
-      <Question question={newQuestion} handlerClick={selectCorrectAnwer} />
-      <button type="button" onClick={sendQuestion}>
-        --------------- Enviar pregunta -------------------
-      </button>
-      <button type="button" onClick={resetQuestion}>
-        {' '}
-        ------------ Borra pregunta -------------
-      </button>
-    </>
-  );
+        </form>
+        <Question question={this.props.question}>
+          <button type="button" onClick={this.selectCorrectAnswer}>
+            Elegir Correcta
+          </button>
+        </Question>
+        {!this.props.question.correctAnswer ? (
+          <h2>Elegir respuesta correcta</h2>
+        ) : (
+          <h2>
+            La respuesta correcta es{' '}
+            {parseInt(this.props.question.correctAnswer) + 1}
+          </h2>
+        )}
+        <button type="button" onClick={this.props.addQuestionOnQuizAction}>
+          --------------- Agregar a Encuesta --------------
+        </button>
+        <br />
+        <button type="button" onClick={this.props.deleteQuestionAction}>
+          ------------ Borra pregunta -------------
+        </button>
+      </>
+    );
+  }
+}
+
+function mapStateToProps(reducers) {
+  return { ...reducers.questionReducers, ...reducers.quizReducers };
+}
+const mapDispatchToProps = {
+  addQuestionOrAnwserAction,
+  deleteQuestionAction,
+  selectCorrectAnswerAction,
+  addQuestionOnQuizAction,
 };
 
-export default QuizForm;
+export default connect(mapStateToProps, mapDispatchToProps)(QuizForm);
